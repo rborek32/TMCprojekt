@@ -1,0 +1,6 @@
+generator danych testowych
+inny niz oparty o funkcje gaussa
+algorytm generowania
+drm
+DTM ALBO DIGITAL ELEVATION MODEL
+PARSER DO DTM  1000 x 1000, moze mniej -> 
