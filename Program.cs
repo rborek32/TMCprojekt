@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-namespace ConsoleApp1
+namespace TMCprojekt
 {
     class Program
     {
@@ -45,12 +46,87 @@ namespace ConsoleApp1
             return values;
         }
 
+        static int[,] ApplyContouringAlgorithm(decimal[,] values, decimal[] contourLevels)
+        {
+            int height = values.GetLength(0);
+            int width = values.GetLength(1);
+
+            int[,] contours = new int[height, width]; // 2D array to store contour information
+
+            for (int i = 1; i < height - 1; i++)
+            {
+                for (int j = 1; j < width - 1; j++)
+                {
+                    bool isContour = false;
+                    decimal currentValue = values[i, j];
+
+                    // Check if the current value is a contour point
+                    foreach (decimal level in contourLevels)
+                    {
+                        if (currentValue > level && (
+                                values[i - 1, j - 1] <= level ||
+                                values[i - 1, j] <= level ||
+                                values[i - 1, j + 1] <= level ||
+                                values[i, j - 1] <= level ||
+                                values[i, j + 1] <= level ||
+                                values[i + 1, j - 1] <= level ||
+                                values[i + 1, j] <= level ||
+                                values[i + 1, j + 1] <= level))
+                        {
+                            isContour = true;
+                            break;
+                        }
+                    }
+                    if (isContour)
+                        contours[i, j] = 1; // Set contour pixel to 1
+                }
+            }
+            return contours;
+        }
+
+        static void SaveContourPositionsToFile(int width, int height,  int[,] contours, string outputFilename)
+        {
+            // Save contour information to output file
+            using (StreamWriter writer = new StreamWriter(outputFilename))
+            {
+                writer.WriteLine("ncols " + width);
+                writer.WriteLine("nrows " + height);
+                writer.WriteLine("xllcorner 0");
+                writer.WriteLine("yllcorner 0");
+                writer.WriteLine("cellsize 1");
+                writer.WriteLine("NODATA_value -9999");
+
+                for (int i = 0; i < height; i++)
+                {
+                    for (int j = 0; j < width; j++)
+                    {
+                        writer.Write(contours[i, j] + " ");
+                    }
+                    writer.WriteLine();
+                }
+            }
+
+            Console.WriteLine("Contour information saved to: " + outputFilename);
+        }
+
         static void Main(string[] args)
         {
-            string filename = @"D:\Magisterka\Semestr 1\geo1\v3\ConsoleApp1\Projekt\result.asc";
-
+            string filename = @"D:\Magisterka\Semestr 1\TMC\Projekt\TMCprojekt\src\result.asc";
+            string outputFilename = @"D:\Magisterka\Semestr 1\TMC\Projekt\TMCprojekt\results\result_contours4.asc";
             //Debug to see the results
             decimal[,] values = ReadDataFromFile(filename);
+            
+            // Define the contour levels you want to track
+            decimal[] contourLevels = { 25, 50, 75, 100 };
+
+            int[,] contourPositions = ApplyContouringAlgorithm(values, contourLevels);
+
+            // Get the dimensions of the contourPositions array
+            int height = contourPositions.GetLength(0);
+            int width = contourPositions.GetLength(1);
+
+            // Save the contour positions to a file
+            SaveContourPositionsToFile(width, height, contourPositions, outputFilename);
         }
     }
 }
