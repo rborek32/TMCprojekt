@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+
 namespace TMCprojekt
 {
     class Program
@@ -84,18 +86,15 @@ namespace TMCprojekt
             return contours;
         }
 
-        static void SaveContourPositionsToFile(int width, int height,  int[,] contours, string outputFilename)
+        static void SaveContourPositionsToFile(int width, int height,  int[,] contours, string inputFilename, string outputFilename)
         {
             // Save contour information to output file
             using (StreamWriter writer = new StreamWriter(outputFilename))
             {
-                writer.WriteLine("ncols " + width);
-                writer.WriteLine("nrows " + height);
-                writer.WriteLine("xllcorner 0");
-                writer.WriteLine("yllcorner 0");
-                writer.WriteLine("cellsize 1");
-                writer.WriteLine("NODATA_value -9999");
+                string[] headerLines = File.ReadLines(inputFilename).Take(6).ToArray();
+                string header = string.Join("\r\n", headerLines);
 
+                writer.WriteLine(header);
                 for (int i = 0; i < height; i++)
                 {
                     for (int j = 0; j < width; j++)
@@ -111,8 +110,8 @@ namespace TMCprojekt
 
         static void Main(string[] args)
         {
-            string filename = @"D:\Magisterka\Semestr 1\TMC\Projekt\TMCprojekt\src\result.asc";
-            string outputFilename = @"D:\Magisterka\Semestr 1\TMC\Projekt\TMCprojekt\results\result_contours4.asc";
+            string filename = @"D:\Magisterka\Semestr 1\TMC\Projekt\TMCprojekt\src\example4.asc";
+            string outputFilename = @"D:\Magisterka\Semestr 1\TMC\Projekt\TMCprojekt\results\result4.asc";
             //Debug to see the results
             decimal[,] values = ReadDataFromFile(filename);
             
@@ -126,7 +125,7 @@ namespace TMCprojekt
             int width = contourPositions.GetLength(1);
 
             // Save the contour positions to a file
-            SaveContourPositionsToFile(width, height, contourPositions, outputFilename);
+            SaveContourPositionsToFile(width, height, contourPositions,filename, outputFilename);
         }
     }
 }
